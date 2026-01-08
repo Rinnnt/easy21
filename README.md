@@ -2,8 +2,9 @@
 
 Implementation of the Easy21 assignment from David Silver's Reinforcement Learning course.
 
-## Tech Stack
-- Python 3
-- Numpy
-- Matplotlib
+## Results
+
+Monte carlo agent after training for 1,000,000 episodes learnt the following optimal value function
+
+![Monte Carlo Value Function Plot](assets/monte_carlo.png)
 

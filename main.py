@@ -1,20 +1,24 @@
-from src.environment import Action, Easy21Env, State
+from src.agents.monte_carlo import MonteCarloAgent
+from src.environment import Action, Easy21Env
+from src.visualize import plot_value_function
 
-def play_manual_game():
-    env = Easy21Env(verbose=True)
+from tqdm import tqdm
+
+
+def play_manual_game() -> None:
     print("--- Starting Easy21Env Test---")
 
+    env = Easy21Env(verbose=True)
     state = env.reset()
     done = False
 
     print(f"Start State: {state}")
-
     while not done:
         user_input = input("\nChoose an action [h=hit, s=stick]: ").lower().strip()
 
-        if user_input == 'h':
+        if user_input == "h":
             action = Action.HIT
-        elif user_input == 's':
+        elif user_input == "s":
             action = Action.STICK
         else:
             print("Invalid input!")
@@ -26,16 +30,34 @@ def play_manual_game():
         if not done:
             print(f"New State: {next_state} | Reward: {reward}")
         else:
-            print(f"---Game Over---")
+            print("---Game Over---")
             print(f"Final State: {next_state}")
             print(f"Final Reward: {reward}")
 
-            if reward == 1:
-                print("You Won!")
-            elif reward == -1:
-                print("You Lose!")
-            else:
-                print("Result: Draw.")
+
+def train_monte_carlo(agent: MonteCarloAgent, env: Easy21Env, episodes: int) -> None:
+    print(f"Training {type(agent).__name__} for {episodes} episodes...")
+
+    for _ in tqdm(range(episodes), desc="Training Progress"):
+        episode = []
+        state = env.reset()
+        done = False
+
+        while not done:
+            action = agent.get_action(state)
+            next_state, reward, done = env.step(action)
+            episode.append((state, action, reward))
+            state = next_state
+
+        agent.update(episode)
+
 
 if __name__ == "__main__":
-    play_manual_game()
+    agent = MonteCarloAgent()
+    env = Easy21Env()
+    episodes = 1_000_000
+
+    train_monte_carlo(agent, env, episodes)
+
+    print("Plotting value function...")
+    plot_value_function(agent, title=f"Monte Carlo Control ({episodes} episodes)")
