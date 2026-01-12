@@ -1,4 +1,5 @@
 from src.agents.monte_carlo import MonteCarloAgent
+from src.agents.sarsa_agent import SarsaAgent
 from src.environment import Action, Easy21Env
 from src.visualize import plot_value_function
 
@@ -35,7 +36,10 @@ def play_manual_game() -> None:
             print(f"Final Reward: {reward}")
 
 
-def train_monte_carlo(agent: MonteCarloAgent, env: Easy21Env, episodes: int) -> None:
+def train_monte_carlo(episodes: int) -> None:
+    agent = MonteCarloAgent()
+    env = Easy21Env()
+
     print(f"Training {type(agent).__name__} for {episodes} episodes...")
 
     for _ in tqdm(range(episodes), desc="Training Progress"):
@@ -51,13 +55,39 @@ def train_monte_carlo(agent: MonteCarloAgent, env: Easy21Env, episodes: int) -> 
 
         agent.update(episode)
 
-
-if __name__ == "__main__":
-    agent = MonteCarloAgent()
-    env = Easy21Env()
-    episodes = 1_000_000
-
-    train_monte_carlo(agent, env, episodes)
-
     print("Plotting value function...")
     plot_value_function(agent, title=f"Monte Carlo Control ({episodes} episodes)")
+
+
+def train_sarsa(lambda_val: float, episodes: int) -> None:
+    agent = SarsaAgent(lambda_val)
+    env = Easy21Env()
+
+    print(f"Training {type(agent).__name__} for {episodes} episodes...")
+
+    for _ in tqdm(range(episodes), desc="Training Progress"):
+        agent.reset_traces()
+
+        state = env.reset()
+        action = agent.get_action(state)
+
+        while True:
+            next_state, reward, done = env.step(action)
+
+            if done:
+                agent.update(state, action, reward, next_state, None, done=True)
+                break
+
+            next_action = agent.get_action(next_state) if not done else None
+
+            agent.update(state, action, reward, next_state, next_action, done)
+
+            state = next_state
+            action = next_action
+
+    print("Plotting value function...")
+    plot_value_function(agent, title=f"Sarsa Control ({episodes} episodes)")
+
+
+if __name__ == "__main__":
+    train_sarsa(0.5, 1_000_000)

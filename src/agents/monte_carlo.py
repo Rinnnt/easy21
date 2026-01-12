@@ -1,6 +1,7 @@
 from src.environment import Action, Reward, State
-from typing import List, Tuple
+
 import numpy as np
+from typing import List, Tuple
 
 
 class MonteCarloAgent:
